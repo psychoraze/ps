@@ -25,5 +25,29 @@ tunnels:
 "@ | Out-File -Encoding ASCII $configPath
 }
 
-# Запускаем ngrok в фоне
-Start-Process -WindowStyle Hidden -FilePath $ngrokPath -ArgumentList "start rdp"
+$ngrokProcess = Start-Process -FilePath $ngrokPath -ArgumentList "start rdp" -PassThru
+Start-Sleep -Seconds 5
+
+try {
+    $response = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
+    $tunnel = $response.tunnels | Where-Object { $_.proto -eq "tcp" }
+    $address = $tunnel.public_url
+
+    $smtpServer = "smtp.gmail.com"
+    $smtpPort = 587
+    $smtpUser = "user.default00@mail.ru"
+    $smtpPass = "smhdebashit"
+    $fromEmail = "user.default00@mail.ru"
+    $toEmail = "user.default00@mail.ru"
+
+    $subject = "Ngrok RDP адрес"
+    $body = "Текущий публичный TCP адрес ngrok для подключения к ноутбуку: `n$address"
+
+    $securePass = ConvertTo-SecureString $smtpPass -AsPlainText -Force
+    $credentials = New-Object System.Management.Automation.PSCredential($smtpUser, $securePass)
+
+    Send-MailMessage -From $fromEmail -To $toEmail -Subject $subject -Body $body -SmtpServer $smtpServer -Port $smtpPort -UseSsl -Credential $credentials
+
+} catch {
+    Write-Error "Не удалось получить адрес ngrok или отправить email: $_"
+}
