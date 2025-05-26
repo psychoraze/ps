@@ -46,7 +46,7 @@ try {
     $securePass = ConvertTo-SecureString $smtpPass -AsPlainText -Force
     $credentials = New-Object System.Management.Automation.PSCredential($smtpUser, $securePass)
 
-    Send-MailMessage -From $fromEmail -To $toEmail -Subject $subject -Body $body -SmtpServer $smtpServer -Port $smtpPort -UseSsl -Credential $credentials
+    Send-MailMessage -From $emailFrom -To $emailTo -Subject $subject -Body $body -SmtpServer $smtpServer -Port $smtpPort -UseSsl -Credential (New-Object PSCredential($smtpUser, (ConvertTo-SecureString $smtpPass -AsPlainText -Force)))
 
 } catch {
     Write-Error "Не удалось получить адрес ngrok или отправить email: $_"
