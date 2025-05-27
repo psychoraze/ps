@@ -24,7 +24,7 @@ tunnels:
 "@ | Out-File -Encoding ASCII $configPath
 }
 
-Start-Process -FilePath $ngrokPath -ArgumentList "start rdp" -WindowStyle Hidden
+$ngrokProcess = Start-Process -FilePath $ngrokPath -ArgumentList "start --config `"$configPath`" rdp" -PassThru -WindowStyle Hidden
 
 $tunnelAddress = $null
 for ($i = 0; $i -lt 10; $i++) {
