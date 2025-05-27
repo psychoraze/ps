@@ -7,7 +7,11 @@ if ($thisScript -ne $startupScriptPath -and !(Test-Path $startupScriptPath)) {
 }
 
 Start-Process reg -ArgumentList 'add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f' -Verb runAs | Out-Null
-netsh advfirewall firewall set rule group="Удаленный рабочий стол" new enable=Yes
+netsh advfirewall firewall add rule `
+    name="ngrok RDP" `
+    dir=in action=allow `
+    protocol=TCP localport=3389 `
+    description="Allow inbound RDP for ngrok" | Out-Null
 
 $ngrokDir   = "$env:APPDATA\ngrok"
 $ngrokExe   = Join-Path $ngrokDir "ngrok.exe"
