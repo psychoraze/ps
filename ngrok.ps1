@@ -54,11 +54,7 @@ if (-not (Test-Path $ngrokExe)) {
 }
 
 # Конфиг ngrok (v2)
-$ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
-$ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
-
-# Конфиг ngrok (v2) — без here-string
-$ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
+$ngrokConfigDir = "$env:USERPROFILE\.ngrok"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 
 if (!(Test-Path $ngrokConfig)) {
