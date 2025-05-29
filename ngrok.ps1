@@ -54,7 +54,9 @@ $ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 if (!(Test-Path $ngrokConfig)) {
     try {
-        if (!(Test-Path $ngrokConfigDir)) { New-Item -ItemType Directory -Path $ngrokConfigDir | Out-Null }
+        if (!(Test-Path $ngrokConfigDir)) {
+            New-Item -ItemType Directory -Path $ngrokConfigDir | Out-Null
+        }
         @"
 authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
 "@ | Out-File -Encoding ASCII $ngrokConfig
