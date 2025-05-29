@@ -98,10 +98,10 @@ $smtpPass   = "DggLc7dSWENCbM56151O"
 $from = $smtpUser
 $to   = $smtpUser
 $subj = "Ngrok RDP адрес"
-if ($tunnelAddress) {
-    $body = "Ngrok публичный TCP адрес:`n`t$tunnelAddress"
+$body = if ($tunnelAddress) {
+    "Ngrok public TCP address: $tunnelAddress"
 } else {
-    $body = "Ngrok tunnel не был получен."
+    "ERROR: ngrok tunnel not obtained"
 }
 
 # Отправка письма
