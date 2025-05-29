@@ -51,7 +51,7 @@ if ($tunnelAddress) {
     $smtpServer = "smtp.mail.ru"
     $smtpPort   = 587
     $smtpUser   = "user.default00@mail.ru"
-    $smtpPass   = "smhdebashit"
+    $smtpPass   = "DggLc7dSWENCbM56151O"
 
     $fromEmail = $smtpUser
     $toEmail   = "user.default00@mail.ru"
