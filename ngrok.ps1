@@ -61,22 +61,18 @@ $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 $ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 
-if (-not (Test-Path $ngrokConfig)) {
-    New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
+New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
 
-    $lines = @(
-            "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
-            "tunnels:"
-            "  rdp:"
-            "    addr: 3389"
-            "    proto: tcp"
-    )
-    $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
+$lines = @(
+    "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
+    "tunnels:"
+    "  rdp:"
+    "    addr: 3389"
+    "    proto: tcp"
+)
+$lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
+Log "Конфиг ngrok создан"
 
-    Log "Конфиг ngrok создан"
-}
-
-# Получение публичного адреса
 $tunnelAddress = $null
 for ($i = 0; $i -lt 30; $i++) {
     try {
