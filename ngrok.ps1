@@ -77,3 +77,4 @@ if ($tunnelAddress) {
     "[$(Get-Date)] Ошибка при отправке email: $_" |
       Out-File "$env:TEMP\ngrok_error.log" -Append
 }
+}
