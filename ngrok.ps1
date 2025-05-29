@@ -66,13 +66,14 @@ if (-not (Test-Path $ngrokConfig)) {
         New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
     }
 
-    @"
-    authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua 
-    tunnels:
-        rdp:
-            addr: 3389
-            proto: tcp
-"@ | Out-File -FilePath $ngrokConfig -Encoding ASCII
+    $lines = @(
+            "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
+            "tunnels:"
+            "  rdp:"
+            "    addr: 3389"
+            "    proto: tcp"
+    )
+    $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
 
     Log "Конфиг ngrok создан"
 }
