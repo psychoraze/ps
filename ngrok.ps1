@@ -53,9 +53,8 @@ if (-not (Test-Path $ngrokExe)) {
     Log "Ngrok уже установлен"
 }
 
-# Конфиг ngrok (v2)
-$ngrokConfigDir = "$env:USERPROFILE\.ngrok"
-$ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
+$ngrokConfigDir = "$env:APPDATA\ngrok"
+$ngrokConfig = "$ngrokConfigDir\ngrok.yml"
 
 if (!(Test-Path $ngrokConfig)) {
     if (!(Test-Path $ngrokConfigDir)) {
