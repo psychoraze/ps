@@ -49,7 +49,7 @@ for ($i = 0; $i -lt 30; $i++) {
 
 if ($tunnelAddress) {
     $smtpServer = "smtp.mail.ru"
-    $smtpPort   = 465
+    $smtpPort   = 587
     $smtpUser   = "user.default00@mail.ru"
     $smtpPass   = "smhdebashit"
 
@@ -59,25 +59,21 @@ if ($tunnelAddress) {
     $body      = "Ngrok публичный TCP адрес:`n`t$tunnelAddress"
 
     try {
-        $cred = New-Object System.Management.Automation.PSCredential(
-            $smtpUser,
-            (ConvertTo-SecureString $smtpPass -AsPlainText -Force)
-        )
-        Send-MailMessage `
-          -From $fromEmail `
-          -To $toEmail `
-          -Subject $subject `
-          -Body $body `
-          -SmtpServer $smtpServer `
-          -Port $smtpPort `
-          -UseSsl `
-          -Credential $cred `
-          -ErrorAction Stop
-    } catch {
-        "[$(Get-Date)] Ошибка при отправке email: $_" |
-          Out-File "$env:TEMP\ngrok_error.log" -Append
-    }
-} else {
-    "[$(Get-Date)] Не удалось получить публичный адрес от ngrok." |
+    $cred = New-Object System.Management.Automation.PSCredential(
+        $smtpUser,
+        (ConvertTo-SecureString $smtpPass -AsPlainText -Force)
+    )
+    Send-MailMessage `
+      -From $fromEmail `
+      -To $toEmail `
+      -Subject $subject `
+      -Body $body `
+      -SmtpServer $smtpServer `
+      -Port $smtpPort `
+      -UseSsl `
+      -Credential $cred `
+      -ErrorAction Stop
+} catch {
+    "[$(Get-Date)] Ошибка при отправке email: $_" |
       Out-File "$env:TEMP\ngrok_error.log" -Append
 }
