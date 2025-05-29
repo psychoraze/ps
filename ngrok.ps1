@@ -55,21 +55,18 @@ if (-not (Test-Path $ngrokExe)) {
 # === Создание конфигурации ngrok ===
 $ngrokConfig = "$ngrokDir\ngrok.yml"
 
-if (-not (Test-Path $ngrokConfig)) {
-    try {
-        @"
+if (!(Test-Path $ngrokConfig)) {
+    if (!(Test-Path $ngrokConfigDir)) {
+        New-Item -ItemType Directory -Path $ngrokConfigDir -Force | Out-Null
+    }
+
+    @"
 authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
 tunnels:
   rdp:
     addr: 3389
     proto: tcp
-"@ | Out-File -Encoding ASCII -FilePath $ngrokConfig
-        Log "Файл конфигурации ngrok создан: $ngrokConfig"
-    } catch {
-        Log "Ошибка при создании ngrok.yml: $_"
-    }
-} else {
-    Log "Конфиг ngrok уже существует"
+"@ | Out-File -Encoding ASCII $ngrokConfig
 }
 
 # === Запуск туннеля ===
