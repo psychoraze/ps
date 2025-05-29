@@ -63,18 +63,16 @@ if (-not (Test-Path $ngrokConfig)) {
             New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
         }
 
-        # Здесь-string начинается на отдельной строке:
-        @"
+        @" 
 authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
 "@ | Out-File -Encoding ASCII $ngrokConfig
 
         Log "Конфиг ngrok создан"
-    }
-    catch {
+    } catch {
         Log "Ошибка при создании конфига ngrok: $_"
     }
 }
-# Запуск туннеля
+
 try {
     Start-Process -FilePath $ngrokExe -ArgumentList "tcp 3389" -WindowStyle Hidden | Out-Null
     Log "Ngrok туннель запущен"
