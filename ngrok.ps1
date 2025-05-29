@@ -61,8 +61,6 @@ $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 $ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 
-New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
-
 $lines = @(
     "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
     "tunnels:"
