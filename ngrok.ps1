@@ -62,13 +62,15 @@ $ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 
 if (-not (Test-Path $ngrokConfig)) {
-    Write-Host "-> Создание конфига ngrok..."
+    Write-Host "-> Конфиг ngrok не найден. Начинаем создание..."
 
+    # Если директория тоже не существует — создаём
     if (-not (Test-Path $ngrokConfigDir)) {
-        Write-Host "-> Папка не найдена, создаём: $ngrokConfigDir"
+        Write-Host "-> Папка $ngrokConfigDir не существует, создаём..."
         New-Item -Path $ngrokConfigDir -ItemType Directory -Force | Out-Null
     }
 
+    # Содержимое конфигурации
     $lines = @(
         "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
         "tunnels:"
@@ -77,13 +79,11 @@ if (-not (Test-Path $ngrokConfig)) {
         "    proto: tcp"
     )
 
-    try {
-        $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
-        Write-Host "-> Конфиг записан в: $ngrokConfig"
-    } catch {
-        Write-Host "❌ Ошибка при записи файла: $_"
-    }
-} else {
+    # Пишем файл
+    $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
+    Write-Host "-> Конфиг ngrok создан по пути: $ngrokConfig"
+}
+else {
     Write-Host "-> Конфиг уже существует: $ngrokConfig"
 }
 
@@ -131,5 +131,3 @@ try {
 } catch {
     Log "Ошибка при отправке email: $_"
 }
-
-Log "=== Скрипт завершён ==="
