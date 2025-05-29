@@ -36,7 +36,7 @@ try {
 }
 
 # === Скачивание и установка ngrok ===
-$ngrokDir = "$env:APPDATA\ngrok"
+$ngrokDir = "$env:APPDATA\ngrok2"
 $ngrokExe = Join-Path $ngrokDir "ngrok.exe"
 $tempZip  = "$env:TEMP\ngrok.zip"
 
