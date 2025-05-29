@@ -62,25 +62,20 @@ $ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 
 if (-not (Test-Path $ngrokConfig)) {
-    # Создаём папку, если её нет
     if (-not (Test-Path $ngrokConfigDir)) {
         New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
-        Log "Папка конфига создана: $ngrokConfigDir"
     }
 
-    # Содержимое конфига
-    $lines = @(
-        "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
-        "tunnels:"
-        "  rdp:"
-        "    addr: 3389"
-        "    proto: tcp"
-    )
+    @"
+authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
+tunnels:
+  rdp:
+    addr: 3389
+    proto: tcp
+"@ | Out-File -FilePath $ngrokConfig -Encoding ASCII
 
-    $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
-    Log "Конфиг ngrok создан: $ngrokConfig"
+    Log "Конфиг ngrok создан"
 }
-
 
 # Получение публичного адреса
 $tunnelAddress = $null
