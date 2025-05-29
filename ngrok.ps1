@@ -77,13 +77,8 @@ if (-not (Test-Path $ngrokConfig)) {
         "    proto: tcp"
     )
 
-    # Пишем файл
-    try {
-        $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
-        Log "Конфиг ngrok создан: $ngrokConfig"
-    } catch {
-        Log "Ошибка при записи ngrok.yml: $_"
-    }
+    $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
+    Log "Конфиг ngrok создан: $ngrokConfig"
 }
 
 
