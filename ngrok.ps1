@@ -62,25 +62,27 @@ $ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 
 if (-not (Test-Path $ngrokConfig)) {
-    try {
-        # Создаём папку, если нужно
-        if (-not (Test-Path $ngrokConfigDir)) {
-            New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
-        }
-        # Готовим содержимое конфига
-        $lines = @(
-            "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
-            "tunnels:"
-            "  rdp:"
-            "    addr: 3389"
-            "    proto: tcp"
-        )
-        # Записываем в файл ASCII
-        $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
+    # Создаём папку, если её нет
+    if (-not (Test-Path $ngrokConfigDir)) {
+        New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
+        Log "Папка конфига создана: $ngrokConfigDir"
+    }
 
-        Log "Конфиг ngrok создан"
+    # Содержимое конфига
+    $lines = @(
+        "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
+        "tunnels:"
+        "  rdp:"
+        "    addr: 3389"
+        "    proto: tcp"
+    )
+
+    # Пишем файл
+    try {
+        $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
+        Log "Конфиг ngrok создан: $ngrokConfig"
     } catch {
-        Log "Ошибка при создании конфига ngrok: $_"
+        Log "Ошибка при записи ngrok.yml: $_"
     }
 }
 
