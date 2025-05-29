@@ -57,15 +57,26 @@ if (-not (Test-Path $ngrokExe)) {
 $ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
 $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 
+# Конфиг ngrok (v2) — без here-string
+$ngrokConfigDir = "$env:USERPROFILE\.ngrok2"
+$ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
+
 if (-not (Test-Path $ngrokConfig)) {
     try {
+        # Создаём папку, если нужно
         if (-not (Test-Path $ngrokConfigDir)) {
             New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
         }
-
-        @" 
-authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
-"@ | Out-File -Encoding ASCII $ngrokConfig
+        # Готовим содержимое конфига
+        $lines = @(
+            "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
+            "tunnels:"
+            "  rdp:"
+            "    addr: 3389"
+            "    proto: tcp"
+        )
+        # Записываем в файл ASCII
+        $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
 
         Log "Конфиг ngrok создан"
     } catch {
@@ -73,12 +84,6 @@ authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
     }
 }
 
-try {
-    Start-Process -FilePath $ngrokExe -ArgumentList "tcp 3389" -WindowStyle Hidden | Out-Null
-    Log "Ngrok туннель запущен"
-} catch {
-    Log "Ошибка при запуске туннеля ngrok: $_"
-}
 
 # Получение публичного адреса
 $tunnelAddress = $null
