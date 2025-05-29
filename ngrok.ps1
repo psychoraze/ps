@@ -55,7 +55,7 @@ if (-not (Test-Path $ngrokExe)) {
 # === Создание конфигурации ngrok ===
 $ngrokConfig = "$ngrokDir\ngrok.yml"
 
-if (!(Test-Path $ngrokConfig)) {
+if (!(Test-Path $ngrokDir)) {
     if (!(Test-Path $ngrokConfigDir)) {
         New-Item -ItemType Directory -Path $ngrokConfigDir -Force | Out-Null
     }
