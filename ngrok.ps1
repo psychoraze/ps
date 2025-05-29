@@ -60,9 +60,7 @@ if (-not (Test-Path $ngrokConfig)) {
         if (-not (Test-Path $ngrokConfigDir)) {
             New-Item -Path $ngrokConfigDir -ItemType Directory | Out-Null
         }
-        @"
-authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua
-"@ | Out-File -Encoding ASCII $ngrokConfig
+        "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua" | Out-File -Encoding ASCII $ngrokConfig
         Log "Конфиг ngrok создан"
     } catch {
         Log "Ошибка создания конфига: $_"
