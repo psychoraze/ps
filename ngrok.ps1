@@ -64,24 +64,21 @@ $ngrokConfig    = Join-Path $ngrokConfigDir "ngrok.yml"
 if (-not (Test-Path $ngrokConfig)) {
     Write-Host "-> Конфиг ngrok не найден. Начинаем создание..."
 
-    # Если директория тоже не существует — создаём
     if (-not (Test-Path $ngrokConfigDir)) {
-        Write-Host "-> Папка $ngrokConfigDir не существует, создаём..."
+        Write-Host "-> Папка не найдена, создаём: $ngrokConfigDir"
         New-Item -Path $ngrokConfigDir -ItemType Directory -Force | Out-Null
     }
 
-    # Содержимое конфигурации
     $lines = @(
-        "authtoken: 2xe3OPcwxui4icUAn8vBgxysHzH_6ceP3DS71bZm5mRxktwua"
+        "authtoken: ТВОЙ_ТОКЕН"
         "tunnels:"
         "  rdp:"
         "    addr: 3389"
         "    proto: tcp"
     )
 
-    # Пишем файл
     $lines | Out-File -FilePath $ngrokConfig -Encoding ASCII
-    Write-Host "-> Конфиг ngrok создан по пути: $ngrokConfig"
+    Write-Host "-> Конфиг ngrok создан: $ngrokConfig"
 }
 else {
     Write-Host "-> Конфиг уже существует: $ngrokConfig"
@@ -129,5 +126,5 @@ try {
         -SmtpServer $smtpServer -Port $smtpPort -UseSsl -Credential $cred -ErrorAction Stop
     Log "Email успешно отправлен"
 } catch {
-    Log "Ошибка при отправке email: $_"
+    Log "Ошибка при отправке email: $($_)"
 }
