@@ -3,7 +3,7 @@ Start-Sleep -Seconds 10  # Подождать появления сети
 # === Логирование ===
 $logFile = "$env:TEMP\ngrok_log.txt"
 function Log($msg) {
-    "[$(Get-Date -Format s)] $msg" | Out-File -FilePath $logFile -Append
+    "[$(Get-Date -Format s)] $msg" | Out-File -FilePath $logFile -Encoding UTF8 -Append
 }
 Log "=== Скрипт стартовал ==="
 
